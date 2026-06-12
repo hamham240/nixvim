@@ -20,9 +20,6 @@
     {
       packages = forAllSystems (pkgs: {
         default = nixvim.legacyPackages.${pkgs.system}.makeNixvimWithModule {
-          extraSpecialArgs = {
-            enableObsidian = false;
-          };
           module = ./neovim.nix;
         };
       });

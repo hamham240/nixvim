@@ -1,8 +1,4 @@
-{
-  lib,
-  enableObsidian ? false,
-  ...
-}:
+{ ... }:
 {
   colorschemes.monokai-pro.enable = true;
 
@@ -140,35 +136,6 @@
       "fb" = "file_browser";
     };
   };
-  plugins.obsidian = lib.mkIf enableObsidian {
-    enable = true;
-    settings = {
-      legacy_commands = false;
-      completion = {
-        min_chars = 2;
-        nvim_cmp = true;
-      };
-      new_notes_location = "current_dir";
-      workspaces = [
-        {
-          name = "math";
-          path = "~/obsidian";
-        }
-      ];
-      callbacks = {
-        enter_note.__raw = ''
-          function(note)
-            vim.keymap.set("n", "gd", require("obsidian.api").smart_action, {
-              buffer = true,
-              desc = "Follow link",
-              expr = true;
-            })
-          end
-        '';
-      };
-    };
-  };
-
   plugins.navic = {
     enable = true;
     settings.lsp.auto_attach = true;
