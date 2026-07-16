@@ -133,6 +133,7 @@
       "tl" = "live_grep";
       "tb" = "buffers";
       "tr" = "resume";
+      "tg" = "git_status";
       "fb" = "file_browser";
     };
   };
