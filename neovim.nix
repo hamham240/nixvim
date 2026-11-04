@@ -28,6 +28,24 @@
     }
     {
       mode = "n";
+      key = "<leader>/";
+      action = "gcc";
+      options = {
+        remap = true;
+        desc = "Toggle comment on line";
+      };
+    }
+    {
+      mode = "v";
+      key = "<leader>/";
+      action = "gc";
+      options = {
+        remap = true;
+        desc = "Toggle comment on selection";
+      };
+    }
+    {
+      mode = "n";
       key = "<leader>h";
       action = "<cmd>ClangdSwitchSourceHeader<CR>";
       options.desc = "Switch to header/source";
