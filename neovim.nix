@@ -17,6 +17,7 @@
     undofile = true;
     number = true;
     mouse = "";
+    shell.__raw = "vim.uv.os_get_passwd().shell";
   };
 
   keymaps = [
