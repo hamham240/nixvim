@@ -67,6 +67,18 @@
       action = "<C-\\><C-n>";
       options.desc = "Exit terminal mode";
     }
+    {
+      mode = "n";
+      key = "<leader>xx";
+      action = "<cmd>Trouble diagnostics toggle<CR>";
+      options.desc = "Toggle diagnostics panel";
+    }
+    {
+      mode = "n";
+      key = "<leader>xX";
+      action = "<cmd>Trouble diagnostics toggle filter.buf=0<CR>";
+      options.desc = "Toggle diagnostics panel (current buffer)";
+    }
   ];
 
   plugins.lsp = {
@@ -152,6 +164,53 @@
 
   plugins.lualine = {
     enable = true;
+    settings.sections = {
+      lualine_b = [
+        "branch"
+        "diff"
+      ];
+      lualine_c = [
+        "filename"
+        {
+          __unkeyed-1 = "diagnostics";
+          sources = [ "nvim_diagnostic" ];
+          always_visible = true;
+        }
+        {
+          # Message of the most severe diagnostic on the cursor's line
+          __unkeyed-1.__raw = ''
+            function()
+              local diags = vim.diagnostic.get(0, { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 })
+              if #diags == 0 then return "" end
+              table.sort(diags, function(a, b) return a.severity < b.severity end)
+              return (diags[1].message:gsub("\n.*", ""))
+            end
+          '';
+        }
+      ];
+      lualine_x = [
+        {
+          # Attached LSP servers, plus progress (e.g. indexing) while they work
+          __unkeyed-1.__raw = ''
+            function()
+              local clients = vim.lsp.get_clients({ bufnr = 0 })
+              if #clients == 0 then return "" end
+              local names = {}
+              for _, c in ipairs(clients) do table.insert(names, c.name) end
+              -- Escape % so progress like "50%" isn't read as a statusline item
+              local status = vim.lsp.status():gsub("%%", "%%%%")
+              if status ~= "" then
+                return " " .. table.concat(names, ", ") .. ": " .. status
+              end
+              return " " .. table.concat(names, ", ")
+            end
+          '';
+        }
+        "encoding"
+        "fileformat"
+        "filetype"
+      ];
+    };
     settings.winbar = {
       lualine_c = [
         {
@@ -161,6 +220,14 @@
       ];
     };
   };
+
+  # Redraw the statusline as LSP progress messages arrive
+  autoCmd = [
+    {
+      event = "LspProgress";
+      callback.__raw = "function() require('lualine').refresh() end";
+    }
+  ];
 
   plugins.gitsigns.enable = true;
   plugins.comment.enable = true;
