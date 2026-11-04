@@ -61,6 +61,12 @@
       action = "<cmd>Neotree toggle<CR>";
       options.desc = "Toggle file tree";
     }
+    {
+      mode = "t";
+      key = "<Esc><Esc>";
+      action = "<C-\\><C-n>";
+      options.desc = "Exit terminal mode";
+    }
   ];
 
   plugins.lsp = {
@@ -162,8 +168,17 @@
   plugins.illuminate.enable = true;
   plugins.trouble.enable = true;
   plugins.rustaceanvim.enable = true;
+  dependencies.rust-analyzer.enable = false;
   plugins.clangd-extensions.enable = true;
   plugins.diffview.enable = true;
+  plugins.toggleterm = {
+    enable = true;
+    settings = {
+      open_mapping = "[[<C-t>]]";
+      direction = "horizontal";
+      size = 15;
+    };
+  };
   plugins.neo-tree = {
     enable = true;
     closeIfLastWindow = true;
