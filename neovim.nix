@@ -267,11 +267,13 @@
   };
   plugins.neo-tree = {
     enable = true;
-    closeIfLastWindow = true;
-    filesystem = {
-      followCurrentFile.enabled = true;
-      useLibuvFileWatcher = true;
-      filteredItems.hideDotfiles = false;
+    settings = {
+      close_if_last_window = true;
+      filesystem = {
+        follow_current_file.enabled = true;
+        use_libuv_file_watcher = true;
+        filtered_items.hide_dotfiles = false;
+      };
     };
   };
 }
