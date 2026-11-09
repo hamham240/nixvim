@@ -256,6 +256,7 @@
   plugins.trouble.enable = true;
   plugins.rustaceanvim = {
     enable = true;
+    settings.server.default_settings.rust-analyzer.cargo.targetDir = true;
     settings.server.on_attach.__raw = ''
       function(_, bufnr)
         -- Local docs: rustdoc pages in target/doc (built with `cargo doc`), found
