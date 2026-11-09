@@ -258,7 +258,30 @@
     enable = true;
     settings.server.on_attach.__raw = ''
       function(_, bufnr)
-        vim.keymap.set("n", "<leader>K", function() vim.cmd.RustLsp("openDocs") end,
+        -- Local docs: rustdoc pages in target/doc (built with `cargo doc`), found
+        -- by item name. Pages under 1KB are rustdoc re-export redirect stubs.
+        local function local_docs(word)
+          local root = vim.fs.root(bufnr, "Cargo.toml")
+          if not root then return {} end
+          local pages = {}
+          for _, depth in ipairs({ "*", "*/*", "*/*/*" }) do
+            vim.list_extend(pages, vim.fn.glob(root .. "/target/doc/" .. depth .. "/*." .. word .. ".html", false, true))
+          end
+          return vim.tbl_filter(function(p) return vim.fn.getfsize(p) > 1024 end, pages)
+        end
+        local function remote_docs() vim.cmd.RustLsp("openDocs") end
+
+        vim.keymap.set("n", "<leader>K", function()
+          local pages = local_docs(vim.fn.expand("<cword>"))
+          if #pages == 0 then
+            remote_docs()
+          elseif #pages == 1 then
+            vim.ui.open(pages[1])
+          else
+            vim.ui.select(pages, { prompt = "Local docs" }, function(p) if p then vim.ui.open(p) end end)
+          end
+        end, { buffer = bufnr, desc = "Open local docs (fallback: docs.rs)" })
+        vim.keymap.set("n", "<leader>gK", remote_docs,
           { buffer = bufnr, desc = "Open docs.rs for symbol under cursor" })
       end
     '';
