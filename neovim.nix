@@ -143,6 +143,7 @@
       "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), {'i', 's'})";
       "<C-e>" = "cmp.mapping.abort()";
     };
+    settings.performance.fetching_timeout = 1500;
   };
   plugins.luasnip.enable = true;
   plugins.treesitter = {
@@ -253,7 +254,15 @@
   plugins.nvim-autopairs.enable = true;
   plugins.illuminate.enable = true;
   plugins.trouble.enable = true;
-  plugins.rustaceanvim.enable = true;
+  plugins.rustaceanvim = {
+    enable = true;
+    settings.server.on_attach.__raw = ''
+      function(_, bufnr)
+        vim.keymap.set("n", "<leader>K", function() vim.cmd.RustLsp("openDocs") end,
+          { buffer = bufnr, desc = "Open docs.rs for symbol under cursor" })
+      end
+    '';
+  };
   dependencies.rust-analyzer.enable = false;
   plugins.clangd-extensions.enable = true;
   plugins.diffview.enable = true;
