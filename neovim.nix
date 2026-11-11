@@ -210,19 +210,23 @@
       ];
       lualine_x = [
         {
-          # Attached LSP servers, plus progress (e.g. indexing) while they work
+          # Each attached server with its stage: the short title of its current
+          # work (e.g. "rust-analyzer: Indexing 45%") or a check mark once it has
+          # no work in progress. Skips the per-file messages that flashed by.
           __unkeyed-1.__raw = ''
             function()
               local clients = vim.lsp.get_clients({ bufnr = 0 })
               if #clients == 0 then return "" end
-              local names = {}
-              for _, c in ipairs(clients) do table.insert(names, c.name) end
-              -- Escape % so progress like "50%" isn't read as a statusline item
-              local status = vim.lsp.status():gsub("%%", "%%%%")
-              if status ~= "" then
-                return " " .. table.concat(names, ", ") .. ": " .. status
+              local parts = {}
+              for _, c in ipairs(clients) do
+                local stage = "✓"
+                for _, task in pairs((_G.lsp_stage or {})[c.id] or {}) do
+                  stage = task.title .. (task.pct and (" " .. task.pct .. "%%") or "")
+                  break
+                end
+                table.insert(parts, c.name .. ": " .. stage)
               end
-              return " " .. table.concat(names, ", ")
+              return " " .. table.concat(parts, "  ")
             end
           '';
         }
@@ -244,8 +248,31 @@
   # Redraw the statusline as LSP progress messages arrive
   autoCmd = [
     {
+      # Track the current stage of each server's work, per progress token
       event = "LspProgress";
-      callback.__raw = "function() require('lualine').refresh() end";
+      callback.__raw = ''
+        function(ev)
+          local id, token = ev.data.client_id, ev.data.params.token
+          local v = ev.data.params.value
+          if type(v) ~= "table" then return end
+          _G.lsp_stage = _G.lsp_stage or {}
+          local tasks = _G.lsp_stage[id] or {}
+          _G.lsp_stage[id] = tasks
+          if v.kind == "end" then
+            tasks[token] = nil
+          elseif v.kind == "begin" then
+            tasks[token] = { title = v.title or "Working", pct = v.percentage }
+          elseif tasks[token] then
+            tasks[token].pct = v.percentage or tasks[token].pct
+          end
+          require("lualine").refresh()
+        end
+      '';
+    }
+    {
+      # Forget a server's work when it stops
+      event = "LspDetach";
+      callback.__raw = "function(ev) if _G.lsp_stage then _G.lsp_stage[ev.data.client_id] = nil end end";
     }
   ];
 
